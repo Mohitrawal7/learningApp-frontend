@@ -55,6 +55,14 @@ export const fetchGroupsByTeacher = async (teacherId) => {
   return mockData.groups.filter(group => group.teacherId === teacherId);
 };
 
+export const fetchGroupsByStudent = async (studentId) => {
+  await delay(500);
+  return mockData.groups.filter(group =>
+    group.studentIds.includes(studentId)
+  );
+};
+
+
 /**
  * Fetches assignments for a specific group.
  * @param {string} groupId The ID of the group.
