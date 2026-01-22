@@ -13,9 +13,9 @@ const mockData = {
     { id: '2', name: 'Bob Williams', type: 'teacher' },
   ],
   groups: [
-    { id: 'grp1', name: 'Algebra I', teacherId: '2' },
-    { id: 'grp2', name: 'Biology 101', teacherId: '2' },
-    { id: 'grp3', name: 'World History', teacherId: '2' },
+    { id: 'grp1', name: 'Algebra I', teacherId: '1' },
+    { id: 'grp2', name: 'Biology 101', teacherId: '1' },
+    { id: 'grp3', name: 'World History', teacherId: '1' },
   ],
   assignments: [
     { id: 'asg1', groupId: 'grp1', title: 'Chapter 1 Quiz', dueDate: '2025-09-15' },
@@ -52,6 +52,7 @@ export const login = async (username, password) => {
  */
 export const fetchGroupsByTeacher = async (teacherId) => {
   await delay(500);
+  console.log("Fetching groups for teacher ID:", teacherId);
   return mockData.groups.filter(group => group.teacherId === teacherId);
 };
 

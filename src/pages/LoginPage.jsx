@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { User, Lock, ArrowRight, CircleDashed } from 'lucide-react';
 import { login } from '../api.js';
+import { useNavigate } from 'react-router-dom';
+
+import { useAuth } from "../services/authServices.jsx"
 
 /**
  * LoginPage Component
@@ -11,21 +14,27 @@ const LoginPage = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
-    const user = await login(username, password);
-    setLoading(false);
-
-    if (user) {
-      onLoginSuccess(user);
-    } else {
+    try{
+     await login({ username, password });
+ 
+      setTimeout(()=>navigate("/dashboard"),1500);
+    }catch(error){
+      console.error("Login failed:", error);
       setError('Invalid username or password. Please try again.');
     }
+finally{
+      setLoading(false);
+        }
   };
+
+  
 
   return (
     <div className="flex flex-col items-center justify-center p-8">

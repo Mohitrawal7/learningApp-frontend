@@ -1,15 +1,12 @@
-import { useState, useEffect } from 'react';
-import { BookOpen, Users, CircleDashed } from 'lucide-react';
-import { fetchGroupsByTeacher } from '../api.js';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from "../services/authServices.jsx"
+import React from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { CircleDashed, Users } from "lucide-react";
+import { fetchGroupsByTeacher } from "../api.js";
+import { useAuth } from "../services/authServices.jsx";
+import { Link } from "react-router-dom";
 
-/**
- * DashboardPage Component
- * This component displays the user's dashboard, including a list of their groups.
- * It fetches data from the mock API and handles loading and error states.
- */
-const DashboardPage = ({ currentUser, navigateToGroup }) => {
+const AdminDashboard = ({ currentUser, navigateToGroup }) => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,17 +18,17 @@ const DashboardPage = ({ currentUser, navigateToGroup }) => {
   useEffect(() => {
     // Only fetch groups if the user is a teacher.
     console.log(user.role);
-    if (user && user.role === 'student') {
+    if (user && user.role.toLowerCase() === "admin") {
       const loadGroups = async () => {
-        try { 
+        try {
           setLoading(true);
           const fetchedGroups = await fetchGroupsByTeacher(user.id);
           console.log("User ID for fetching groups:", user.id);
           console.log("Fetched groups:", fetchedGroups);
           setGroups(fetchedGroups);
         } catch (err) {
-          setError('Failed to load groups. Please try again.');
-          console.error('Error fetching groups:', err);
+          setError("Failed to load groups. Please try again.");
+          console.error("Error fetching groups:", err);
         } finally {
           setLoading(false);
         }
@@ -39,7 +36,7 @@ const DashboardPage = ({ currentUser, navigateToGroup }) => {
       loadGroups();
     } else {
       setLoading(false);
-      setError('You are not authorized to view this page.');
+      setError("You are not authorized to view this page.");
     }
   }, [currentUser]);
 
@@ -61,22 +58,29 @@ const DashboardPage = ({ currentUser, navigateToGroup }) => {
       </div>
     );
   }
-  
+
   // Display the dashboard content once the data is loaded.
   return (
     <div className="space-y-6">
+      <div className="flex ">
       <h2 className="text-2xl font-semibold text-gray-800">My Dashboard</h2>
+     <button className= "absolute bg-blue-500 rounded-2xl p-2 px-4 text-bold right-10"> <Link to="/add-subject"> + </Link> </button>
+     </div>
       <p className="text-gray-600">
-        Welcome, <span className="font-medium text-indigo-600">{user.username}</span>! Here are your enrolled subjects.
+        Welcome,{" "}
+        <span className="font-medium text-indigo-600">{user.username}</span>!
+        Here are your enrolled subjects.
       </p>
 
       {groups.length === 0 ? (
         <div className="text-center p-8 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">You don't have any enrolled subjects yet.</p>
+          <p className="text-gray-500">
+            You don't have any enrolled subjects yet.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {groups.map(group => (
+          {groups.map((group) => (
             <div
               key={group.id}
               onClick={() => navigateToGroup(group)}
@@ -90,7 +94,9 @@ const DashboardPage = ({ currentUser, navigateToGroup }) => {
                   {group.name}
                 </h3>
               </div>
-              <p className="mt-2 text-sm text-gray-500">Teacher: {currentUser.name}</p>
+              <p className="mt-2 text-sm text-gray-500">
+                Teacher: {currentUser.name}
+              </p>
               <button
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent navigating to group page on button click
@@ -108,4 +114,4 @@ const DashboardPage = ({ currentUser, navigateToGroup }) => {
   );
 };
 
-export default DashboardPage;
+export default AdminDashboard;

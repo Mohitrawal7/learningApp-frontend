@@ -1,92 +1,81 @@
-import { useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import GroupPage from './pages/GroupPage.jsx';
 import AssignmentPage from './pages/AssignmentPage.jsx';
+import AdminDashboard from './pages/AdminDashboard.jsx';
+import TeacherDashboard from './pages/TeacherDashboard.jsx';
+import PrivateRoute from './components/PrivateRoute.jsx';
+import { useAuth } from './services/authServices.jsx';
+import AddSubject from './pages/AddSubject.jsx';
+import AddAssignment from './pages/AddAssignment.jsx';
 
-/**
- * App Component
- * This is the main component of the application. It manages the user's
- * authentication state and controls which page is currently displayed.
- */
 const App = () => {
-  // State to store the current user, or null if not logged in.
-  const [currentUser, setCurrentUser] = useState(null);
-  // State to track the currently viewed page.
-  const [currentPage, setCurrentPage] = useState('login');
-  // State to hold data for the current group.
-  const [currentGroup, setCurrentGroup] = useState(null);
-  // State to hold data for the current assignment.
-  const [currentAssignment, setCurrentAssignment] = useState(null);
+  const { user } = useAuth();
 
-  /**
-   * Handles a successful login.
-   * @param {object} user The user object returned from the API.
-   */
-  const handleLoginSuccess = (user) => {
-    setCurrentUser(user);
-    setCurrentPage('dashboard');
+  const renderRole = () => {
+    console.log('Current User:', user?.role.toLowerCase());
+    if (user?.role.toLowerCase() === 'admin') return <AdminDashboard />;
+    if (user?.role.toLowerCase() === 'teacher') return <TeacherDashboard />;
+    return <DashboardPage currentUser={user} />;
   };
 
-  /**
-   * Navigates to the GroupPage with a specific group.
-   * @param {object} group The group object to navigate to.
-   */
-  const navigateToGroup = (group) => {
-    setCurrentGroup(group);
-    setCurrentPage('group');
-  };
-
-  /**
-   * Navigates back to the Dashboard.
-   */
-  const navigateToDashboard = () => {
-    setCurrentPage('dashboard');
-    setCurrentGroup(null);
-    setCurrentAssignment(null);
-  };
-
-  /**
-   * Navigates to the AssignmentPage with a specific assignment.
-   * @param {object} assignment The assignment object to navigate to.
-   */
-  const navigateToAssignment = (assignment) => {
-    setCurrentAssignment(assignment);
-    setCurrentPage('assignment');
-  };
-  
-  // Conditionally render the correct page based on the current state.
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'dashboard':
-        return <DashboardPage currentUser={currentUser} navigateToGroup={navigateToGroup} />;
-      case 'group':
-        return <GroupPage group={currentGroup} navigateToDashboard={navigateToDashboard} navigateToAssignment={navigateToAssignment} />;
-      case 'assignment':
-        return <AssignmentPage assignment={currentAssignment} currentUser={currentUser} />;
-      case 'login':
-      default:
-        return <LoginPage onLoginSuccess={handleLoginSuccess} />;
-    }
-  };
-
-  
-
-  // Main application layout with a consistent header and the rendered page.
   return (
     <div className="min-h-screen bg-gray-100 p-4 font-sans antialiased">
       <header className="flex items-center justify-between p-4 bg-white shadow-md rounded-xl mb-6">
         <h1 className="text-xl md:text-2xl font-bold text-gray-800">
           Learning Portal
         </h1>
-        {currentUser && (
+
+        {user && (
           <div className="text-sm font-medium text-gray-600">
-            Logged in as: <span className="text-indigo-600">{currentUser.name}</span>
+            Logged in as: <span className="text-indigo-600">{user.username}</span>
           </div>
         )}
       </header>
-      <main className="container mx-auto p-6 bg-white rounded-xl shadow-md">
-        {renderPage()}
+
+      <main className="mx-auto p-6 bg-white rounded-xl shadow-md">
+        <Routes>
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
+
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                {renderRole()}
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/group"
+            element={
+              <PrivateRoute>
+                <GroupPage />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/assignment"
+            element={
+              <PrivateRoute>
+                <AssignmentPage />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/add-subject" element={
+            <PrivateRoute>
+              <AddSubject />
+            </PrivateRoute>
+          } />
+          <Route path="/add-assignment" element={
+            <PrivateRoute>
+              <AddAssignment />
+            </PrivateRoute>
+          } />
+        </Routes>
       </main>
     </div>
   );

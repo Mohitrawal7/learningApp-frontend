@@ -14,6 +14,7 @@ const AssignmentPage = ({ assignment, currentUser }) => {
     );
   }
   
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4 mb-6">
