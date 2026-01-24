@@ -1,9 +1,17 @@
 import React from 'react'
+import AddAssignment from './AddAssignment';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { CircleDashed, Users } from "lucide-react";
+import { fetchGroupsByTeacher } from "../api.js";
+import { useAuth } from "../services/authServices.jsx";
+import api from '../api/axiosConfig.js';
 
 const TeacherDashboard =  ({ currentUser, navigateToGroup }) => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+    const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   // console.log("Current User in DashboardPage.jsx:", currentUser);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -12,14 +20,15 @@ const TeacherDashboard =  ({ currentUser, navigateToGroup }) => {
   useEffect(() => {
     // Only fetch groups if the user is a teacher.
     console.log(user.role);
-    if (user && user.role === "teacher") {
+    if (user && user.role === "TEACHER") {
       const loadGroups = async () => {
         try {
           setLoading(true);
-          const fetchedGroups = await fetchGroupsByTeacher(user.id);
+          const fetchedGroups = await api.get(`/api/subjects`);
           console.log("User ID for fetching groups:", user.id);
-          console.log("Fetched groups:", fetchedGroups);
-          setGroups(fetchedGroups);
+          
+          setGroups(fetchedGroups.data);
+          console.log("Fetched groups:", fetchedGroups.data);
         } catch (err) {
           setError("Failed to load groups. Please try again.");
           console.error("Error fetching groups:", err);
@@ -58,7 +67,13 @@ const TeacherDashboard =  ({ currentUser, navigateToGroup }) => {
     <div className="space-y-6">
       <div className="flex ">
       <h2 className="text-2xl font-semibold text-gray-800">My Dashboard</h2>
-     <button className= "absolute bg-blue-500 rounded-2xl p-2 px-4 text-bold right-10"> <Link to="/add-assignment"> + </Link> </button>
+
+      <button
+          onClick={() => setIsAssignmentModalOpen(true)}
+          className="bg-green-600 right-8 absolute hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+        >
+          + Add Assignment
+        </button>
      </div>
       <p className="text-gray-600">
         Welcome,{" "}
@@ -66,6 +81,17 @@ const TeacherDashboard =  ({ currentUser, navigateToGroup }) => {
         Here are your enrolled subjects.
       </p>
 
+{/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  { groups.map((group) => ( <p>"Group data:", {group.id}</p>
+   
+      ))}
+    </div> */}
+
+      <AddAssignment
+        open={isAssignmentModalOpen}
+        onClose={() => setIsAssignmentModalOpen(false)}
+        onSubmit={(data) => console.log("ASSIGNMENT:", data)}
+      />
       {groups.length === 0 ? (
         <div className="text-center p-8 bg-gray-50 rounded-lg">
           <p className="text-gray-500">
@@ -89,7 +115,7 @@ const TeacherDashboard =  ({ currentUser, navigateToGroup }) => {
                 </h3>
               </div>
               <p className="mt-2 text-sm text-gray-500">
-                Teacher: {currentUser.name}
+                Teacher: username
               </p>
               <button
                 onClick={(e) => {
